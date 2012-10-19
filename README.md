@@ -3,3 +3,7 @@ Attempt to decrypt mojibake into readable UTF-8. I can't guarantee that all case
 **Documentation**: [GoPkgDoc](http://go.pkgdoc.org/github.com/moshee/mojibake)
 
 (as if this really needs that much documentation)
+
+#### TODO
+- performance improvements
+- find and add more mis-encoding cases
