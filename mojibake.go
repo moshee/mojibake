@@ -19,6 +19,19 @@ const (
 	CP936                 // assume CJK source
 )
 
+func (self Encoding) String() string {
+	return enc_names[self]
+}
+
+var (
+	// map of Encodings to conversion tables
+	enc_tables = map[Encoding][]rune{
+		CP932: cp932[:],
+		CP936: cp936[:],
+	}
+	enc_names = []string{"CP473", "CP932", "CP936"}
+)
+
 // in:       bytes into the decode worker.
 // out:      decoded bytes out of the decoder.
 // finished: recieve indicates that flush has been called. Once this happens,
@@ -29,9 +42,9 @@ type decode_func func(in, out chan byte, finished, closed chan error)
 var funcs = []decode_func{dec_cp473, dec_cp932, dec_cp936}
 
 // Error type to signal decode_workers that they should break their loops and exit
-type finished struct{}
+type finished_flag struct{}
 
-func (self finished) Error() string {
+func (self finished_flag) Error() string {
 	return "Finished encoding"
 }
 
@@ -112,7 +125,7 @@ func (self *decoder_chain) Write(p []byte) (int, error) {
 func (self *decoder_chain) Flush() (int64, error) {
 	// send finished signal to each worker sequentially
 	for _, worker := range self.workers {
-		worker.finished <- finished{}
+		worker.finished <- finished_flag{}
 		// waiting for the recv back on the same channel ensures they don't
 		// overlap
 		if err := <-worker.finished; err != nil {
