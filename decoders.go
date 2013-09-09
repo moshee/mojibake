@@ -40,6 +40,7 @@ loop:
 			}
 
 		case <-finished:
+			cp = cp[0:0]
 			if !full {
 				finished <- errors.New("mojibake: dec_cp473: malformed byte stream")
 			} else {
@@ -107,6 +108,7 @@ loop:
 			} else {
 				finished <- nil
 			}
+			multi = false
 
 		case <-closed:
 			break loop
