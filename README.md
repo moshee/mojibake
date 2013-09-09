@@ -4,8 +4,6 @@ Future plans include a heuristic encoding-detection mechanism to bruteforce thro
 
 **Documentation**: [GoPkgDoc](http://go.pkgdoc.org/github.com/moshee/mojibake)
 
-(as if this really needs that much documentation)
-
 #### TODO
 
 - performance improvements
