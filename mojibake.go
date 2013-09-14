@@ -76,6 +76,7 @@ type decoder_chain struct {
 	buf     *bytes.Buffer
 	into    chan byte
 	closed  chan error
+	usable  bool
 }
 
 // Initialize a Decoder that will use the specified Encoding path to decode
@@ -115,6 +116,10 @@ func NewDecoder(w io.Writer, encs ...Encoding) (Decoder, error) {
 }
 
 func (self *decoder_chain) Write(p []byte) (int, error) {
+	if !self.usable {
+		return 0, errors.New("This decoder has been closed and is no longer usable.")
+	}
+
 	for _, b := range p {
 		self.into <- b
 	}
@@ -123,6 +128,10 @@ func (self *decoder_chain) Write(p []byte) (int, error) {
 }
 
 func (self *decoder_chain) Flush() (int64, error) {
+	if !self.usable {
+		return 0, errors.New("This decoder has been closed and is no longer usable.")
+	}
+
 	// send finished signal to each worker sequentially
 	for _, worker := range self.workers {
 		worker.finished <- finished_flag{}
@@ -138,6 +147,10 @@ func (self *decoder_chain) Flush() (int64, error) {
 }
 
 func (self *decoder_chain) Close() error {
+	if !self.usable {
+		return nil
+	}
+
 	var err error
 	if self.buf.Len() > 0 {
 		_, err = self.Flush()
@@ -151,6 +164,7 @@ func (self *decoder_chain) Close() error {
 	// close self
 	self.closed <- nil
 
+	self.usable = false
 	return err
 }
 
